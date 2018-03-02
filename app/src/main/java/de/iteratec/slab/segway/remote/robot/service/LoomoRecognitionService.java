@@ -1,8 +1,15 @@
 package de.iteratec.slab.segway.remote.robot.service;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.util.Log;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.segway.robot.sdk.base.bind.ServiceBinder;
 import com.segway.robot.sdk.voice.Recognizer;
 import com.segway.robot.sdk.voice.VoiceException;
@@ -13,8 +20,11 @@ import com.segway.robot.sdk.voice.recognition.RecognitionResult;
 import com.segway.robot.sdk.voice.recognition.WakeupListener;
 import com.segway.robot.sdk.voice.recognition.WakeupResult;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 /**
@@ -28,8 +38,11 @@ public class LoomoRecognitionService {
     private final Context context;
 
     private Recognizer recognizer;
+    private RequestQueue queue;
+    private boolean useJokeApi;
 
     public static LoomoRecognitionService instance;
+    private String jokeApiUrl;
 
     public static LoomoRecognitionService getInstance() {
         if (instance == null) {
@@ -42,6 +55,33 @@ public class LoomoRecognitionService {
         this.context = context;
         init();
         instance = this;
+
+        initJokeApi();
+    }
+
+    private void initJokeApi() {
+        Log.d(TAG, "initJokeApi called");
+        AssetManager assetManager = this.context.getAssets();
+        String url = null;
+
+        try {
+            InputStream is = assetManager.open("application.properties");
+            Properties properties = new Properties();
+            properties.load(is);
+
+            url = properties.getProperty("internal-url.joke-api");
+            Log.d(TAG, "Loaded url: " + url);
+        } catch (IOException e) {
+            Log.e(TAG, "Could not load internal joke api URL");
+        }
+
+        if (url == null) {
+            this.useJokeApi = false;
+        } else {
+            this.useJokeApi = true;
+            this.queue = Volley.newRequestQueue(this.context);
+            this.jokeApiUrl = url;
+        }
     }
 
     public void restartService() {
@@ -129,9 +169,30 @@ public class LoomoRecognitionService {
         public boolean onRecognitionResult(RecognitionResult recognitionResult) {
             Log.i(TAG, "recognition result: " + recognitionResult);
             if (isCommand(recognitionResult.getRecognitionResult(), jokeCommandList)) {
-                String joke = jokes[new Random().nextInt(jokes.length)];
-                LoomoSpeakService.getInstance().speak(joke);
-                return true;
+
+                if (useJokeApi) {
+                    StringRequest request = new StringRequest(Request.Method.GET, jokeApiUrl,
+                            new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    Log.d(TAG, "jokeResponse: " + response);
+                                    LoomoSpeakService.getInstance().speak(response);
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Log.d(TAG, "calling joke API resulted in error: " + error.getMessage());
+                                }
+                            });
+                    request.setTag(TAG);
+                    queue.add(request);
+                } else {
+                    Log.d(TAG, "Not using internal joke API");
+                    String joke = jokes[new Random().nextInt(jokes.length)];
+                    LoomoSpeakService.getInstance().speak(joke);
+                    return true;
+                }
             } else if (isCommand(recognitionResult.getRecognitionResult(), moveCommandList)) {
                 LoomoBaseService loomoBaseService = LoomoBaseService.getInstance();
 
@@ -191,6 +252,9 @@ public class LoomoRecognitionService {
     }
 
     public void disconnect() {
+        if (this.queue != null) {
+            this.queue.cancelAll(TAG);
+        }
         this.recognizer.unbindService();
     }
 }
