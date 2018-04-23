@@ -7,6 +7,12 @@
     android:orientation="vertical"
     tools:context="de.iteratec.slab.segway.remote.robot.MainActivity">
 
+    <Button
+        android:id="@+id/button"
+        android:text="Record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <ViewSwitcher
         android:id="@+id/view_switcher"
         android:layout_width="match_parent"

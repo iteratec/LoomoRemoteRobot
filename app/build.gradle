@@ -44,7 +44,8 @@ dependencies {
     compile 'com.segway.robot:basesdk:0.6.376'
     compile 'com.segway.robot:robot-connectivity-sdk:0.5.98'
     compile 'com.segway.robot:emoji:0.1.28'
-    compile 'com.google.android.gms:play-services-base:12.0.0'
+    //compile 'com.google.android.gms:play-services-base:15.0.0'
+    compile 'com.google.cloud:google-cloud-speech:0.42.1-alpha'
 
     annotationProcessor 'com.google.auto.value:auto-value:1.2'
 
