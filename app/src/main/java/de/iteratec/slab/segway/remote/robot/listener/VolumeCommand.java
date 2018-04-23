@@ -27,21 +27,15 @@ public class VolumeCommand extends MessageCommand {
         Log.i(TAG, "Got Volume Message");
 
             int newVolume = Integer.parseInt(message[1]);
-            Log.i(TAG, "Adjust Volume: " + message[1]);
+            Log.i(TAG, "Adjust Volume: " + newVolume);
 
             try {
-                //mSpeaker.setVolume(10);
                 mSpeaker.setVolume(newVolume);
-                //mSpeaker.speak("Hello world, I am a Segway robot", mTtsListener);
+                Log.i(TAG, "Set volume to " + newVolume);
 
             } catch (Exception e) {
                 Log.e(TAG, "Exception during Volume command", e);
             }
-
-            //Volume input is supposed to look like a int value between 1-100 (100 being very loud) etc.
-            //int volumeAdjustment = Integer.valueOf(split[1]);
-            //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volumeAdjustment, 0);
-
     }
 
 

@@ -19,7 +19,7 @@ import com.segway.robot.sdk.voice.tts.TtsListener;
 
 public class LoomoSpeakService implements TextToSpeech.OnInitListener {
 
-    private EditText txtText;
+    private TextToSpeech tts;
 
     MediaPlayer player = new MediaPlayer();
 
@@ -30,23 +30,6 @@ public class LoomoSpeakService implements TextToSpeech.OnInitListener {
     private static final String TAG = "LoomoSpeakService";
     private Speaker speaker;
     private Context context;
-
-    private TtsListener ttsListener = new TtsListener() {
-        @Override
-        public void onSpeechStarted(String word) {
-            Log.d(TAG, "onSpeechStarted with " + word);
-        }
-
-        @Override
-        public void onSpeechFinished(String word) {
-            Log.d(TAG, "onSpeechFinished with " + word);
-        }
-
-        @Override
-        public void onSpeechError(String word, String reason) {
-            Log.d(TAG, "onSpeechError with " + word);
-        }
-    };
 
     public static LoomoSpeakService instance;
 
@@ -61,6 +44,8 @@ public class LoomoSpeakService implements TextToSpeech.OnInitListener {
         this.context = context;
         init();
         this.instance = this;
+
+        tts = new TextToSpeech(context, this);
     }
 
     public void restartService() {
@@ -87,12 +72,7 @@ public class LoomoSpeakService implements TextToSpeech.OnInitListener {
     }
 
     public void speak(String sentence) {
-        try {
-            Log.d(TAG, "sending sentence to speak: " + sentence);
-            speaker.speak(sentence, ttsListener);
-        } catch (VoiceException e) {
-            Log.e(TAG, "could not send sentence", e);
-        }
+        tts.speak(sentence, TextToSpeech.QUEUE_FLUSH, null);
     }
 
 
@@ -117,6 +97,5 @@ public class LoomoSpeakService implements TextToSpeech.OnInitListener {
         this.speaker.unbindService();
     }
 
-    //Implement broadcast audio file for sound test
 
 }
