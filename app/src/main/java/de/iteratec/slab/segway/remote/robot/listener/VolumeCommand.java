@@ -13,7 +13,6 @@ import com.segway.robot.sdk.voice.tts.TtsListener;
 public class VolumeCommand extends MessageCommand {
 
     private static final String TAG = "VolumeCommand";
-    private static boolean runTest = false;
 
     private Speaker mSpeaker = Speaker.getInstance();
 
