@@ -2,6 +2,7 @@ package de.iteratec.slab.segway.remote.robot.service;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -10,6 +11,18 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.speech.v1.RecognitionAudio;
+import com.google.cloud.speech.v1.RecognitionConfig;
+import com.google.cloud.speech.v1.RecognizeResponse;
+import com.google.cloud.speech.v1.SpeechClient;
+import com.google.cloud.speech.v1.SpeechRecognitionAlternative;
+import com.google.cloud.speech.v1.SpeechRecognitionResult;
+import com.google.cloud.speech.v1.SpeechSettings;
+import com.google.protobuf.ByteString;
 import com.segway.robot.sdk.base.bind.ServiceBinder;
 import com.segway.robot.sdk.voice.Recognizer;
 import com.segway.robot.sdk.voice.VoiceException;
@@ -20,6 +33,9 @@ import com.segway.robot.sdk.voice.recognition.RecognitionResult;
 import com.segway.robot.sdk.voice.recognition.WakeupListener;
 import com.segway.robot.sdk.voice.recognition.WakeupResult;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -36,6 +52,7 @@ public class LoomoRecognitionService {
     private static final String TAG = "LoomoRecognitionService";
     public static final float MOVE_DELTA = 0.5f;
     private final Context context;
+    private SpeechClient speechClient;
 
     private Recognizer recognizer;
     private RequestQueue queue;
@@ -210,6 +227,8 @@ public class LoomoRecognitionService {
                     loomoBaseService.resetPosition();
 
                 }
+            } else {
+                Log.d(TAG, "unknown command:" + recognitionResult);
             }
             return false;
         }
@@ -255,6 +274,12 @@ public class LoomoRecognitionService {
         if (this.queue != null) {
             this.queue.cancelAll(TAG);
         }
+        try {
+            this.speechClient.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         this.recognizer.unbindService();
     }
 }
