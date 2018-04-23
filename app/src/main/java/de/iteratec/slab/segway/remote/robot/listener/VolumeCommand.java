@@ -16,7 +16,6 @@ public class VolumeCommand extends MessageCommand {
     private static boolean runTest = false;
 
     private Speaker mSpeaker = Speaker.getInstance();
-    private TtsListener mTtsListener;
 
     public VolumeCommand(String[] message) {
         super(message);
