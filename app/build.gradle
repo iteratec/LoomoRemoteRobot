@@ -38,6 +38,7 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+
     implementation 'com.segway.robot:visionsdk:0.6.547'
     implementation 'com.segway.robot:speech-sdk:0.5.327'
     implementation 'com.segway.robot:headsdk:0.6.746'
